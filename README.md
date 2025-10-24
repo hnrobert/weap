@@ -67,6 +67,19 @@ npm run build:linux
 
 ## 使用 GitHub Actions 自动构建
 
+### 重要提示
+
+确保 `package-lock.json` 文件已提交到仓库。如果没有，运行：
+
+```bash
+npm install
+git add package-lock.json
+git commit -m "Add package-lock.json"
+git push
+```
+
+### 构建步骤
+
 1. 进入仓库的 **Actions** 标签页
 2. 选择 **Build Electron App** 工作流
 3. 点击 **Run workflow**
