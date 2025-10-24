@@ -51,37 +51,22 @@ jobs:
         strategy:
             matrix:
                 include:
-                    # macOS builds
+                    # macOS builds - 只保留主要架构
                     - os: macos-latest
                       arch: x64
                       platform: mac
                     - os: macos-latest
                       arch: arm64
-                      platform: mac
-                    - os: macos-latest
-                      arch: universal
                       platform: mac
 
-                    # Windows builds
+                    # Windows builds - 只保留 x64
                     - os: windows-latest
                       arch: x64
-                      platform: win
-                    - os: windows-latest
-                      arch: ia32
-                      platform: win
-                    - os: windows-latest
-                      arch: arm64
                       platform: win
 
-                    # Linux builds
+                    # Linux builds - 只保留 x64
                     - os: ubuntu-latest
                       arch: x64
-                      platform: linux
-                    - os: ubuntu-latest
-                      arch: arm64
-                      platform: linux
-                    - os: ubuntu-latest
-                      arch: armv7l
                       platform: linux
 
         runs-on: ${{ matrix.os }}

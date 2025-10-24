@@ -15,19 +15,16 @@
 
 - Intel (x64)
 - Apple Silicon (arm64)
-- Universal (通用二进制)
 
 ### Windows
 
 - 64-bit (x64)
-- 32-bit (ia32)
-- ARM64
 
 ### Linux
 
 - x64
-- ARM64
-- ARMv7l
+
+> **注意**: 如需其他架构，可以修改 `package.json` 中的 `build` 配置
 
 ## 本地开发
 
@@ -69,13 +66,13 @@ npm run build:linux
 
 ### 重要提示
 
-确保 `package-lock.json` 文件已提交到仓库。如果没有，运行：
+**无需 package-lock.json**: 本项目已配置为不使用 lock 文件，直接运行即可。
+
+如遇到依赖问题，删除 `node_modules` 重新安装：
 
 ```bash
+rm -rf node_modules
 npm install
-git add package-lock.json
-git commit -m "Add package-lock.json"
-git push
 ```
 
 ### 构建步骤
@@ -97,8 +94,26 @@ git push
 
 1. 用户通过 GitHub Actions 的 workflow_dispatch 输入网站列表
 2. 自动生成 `config.json` 配置文件
-3. 并行构建所有平台和架构的应用
+3. 并行构建主流平台（macOS x64/arm64, Windows x64, Linux x64）
 4. 将所有构建产物打包并创建 Release
+
+## 体积优化
+
+本项目已进行以下优化以减小应用体积：
+
+- ✅ 使用最大压缩级别
+- ✅ 过滤不必要的文件（文档、测试、示例）
+- ✅ 不使用 package-lock.json
+- ✅ 零运行时依赖（仅使用 Electron 内置模块）
+- ✅ 只构建主流平台和架构
+
+**预期包体积**:
+
+- macOS: ~90-120 MB
+- Windows: ~80-100 MB
+- Linux: ~90-110 MB
+
+详见 [OPTIMIZATION.md](OPTIMIZATION.md) 了解更多优化细节。
 
 ## 安全特性
 

@@ -30,24 +30,29 @@
     "files": [
       "src/**/*",
       "configs/**/*",
-      "package.json"
+      "package.json",
+      "!**/*.map",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*.d.ts",
+      "!**/node_modules/.bin",
+      "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
+      "!.editorconfig",
+      "!**/._*",
+      "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
+      "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
+      "!**/{appveyor.yml,.travis.yml,circle.yml}",
+      "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
     ],
+    "asarUnpack": [],
+    "compression": "maximum",
     "mac": {
       "target": [
         {
           "target": "dmg",
           "arch": [
             "x64",
-            "arm64",
-            "universal"
-          ]
-        },
-        {
-          "target": "zip",
-          "arch": [
-            "x64",
-            "arm64",
-            "universal"
+            "arm64"
           ]
         }
       ],
@@ -58,57 +63,43 @@
         {
           "target": "nsis",
           "arch": [
-            "x64",
-            "ia32",
-            "arm64"
-          ]
-        },
-        {
-          "target": "zip",
-          "arch": [
-            "x64",
-            "ia32",
-            "arm64"
+            "x64"
           ]
         }
-      ]
+      ],
+      "compression": "maximum"
     },
     "linux": {
       "target": [
         {
           "target": "AppImage",
           "arch": [
-            "x64",
-            "arm64",
-            "armv7l"
-          ]
-        },
-        {
-          "target": "deb",
-          "arch": [
-            "x64",
-            "arm64",
-            "armv7l"
-          ]
-        },
-        {
-          "target": "rpm",
-          "arch": [
-            "x64",
-            "arm64",
-            "armv7l"
-          ]
-        },
-        {
-          "target": "tar.gz",
-          "arch": [
-            "x64",
-            "arm64",
-            "armv7l"
+            "x64"
           ]
         }
       ],
-      "category": "Network"
+      "category": "Network",
+      "compression": "maximum"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "deleteAppDataOnUninstall": false
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
     }
   }
 }
