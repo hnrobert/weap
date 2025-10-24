@@ -1,0 +1,181 @@
+name: Build Electron App
+
+on:
+    workflow_dispatch:
+        inputs:
+            websites:
+                description: "允许访问的网站列表（用逗号分隔）"
+                required: true
+                default: "https://github.com,https://google.com"
+                type: string
+
+jobs:
+    prepare-config:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Generate config.json
+              run: |
+                  websites="${{ github.event.inputs.websites }}"
+                  echo "Input websites: $websites"
+
+                  # 创建 JSON 数组
+                  IFS=',' read -ra ADDR <<< "$websites"
+                  json_array="["
+                  first=true
+                  for website in "${ADDR[@]}"; do
+                    website=$(echo "$website" | xargs) # 去除空格
+                    if [ "$first" = true ]; then
+                      json_array="$json_array\"$website\""
+                      first=false
+                    else
+                      json_array="$json_array,\"$website\""
+                    fi
+                  done
+                  json_array="$json_array]"
+
+                  # 生成 config.json
+                  echo "{\"allowedWebsites\":$json_array}" > configs/config.json
+                  cat configs/config.json
+
+            - name: Upload config
+              uses: actions/upload-artifact@v4
+              with:
+                  name: config
+                  path: configs/config.json
+
+    build:
+        needs: prepare-config
+        strategy:
+            matrix:
+                include:
+                    # macOS builds
+                    - os: macos-latest
+                      arch: x64
+                      platform: mac
+                    - os: macos-latest
+                      arch: arm64
+                      platform: mac
+                    - os: macos-latest
+                      arch: universal
+                      platform: mac
+
+                    # Windows builds
+                    - os: windows-latest
+                      arch: x64
+                      platform: win
+                    - os: windows-latest
+                      arch: ia32
+                      platform: win
+                    - os: windows-latest
+                      arch: arm64
+                      platform: win
+
+                    # Linux builds
+                    - os: ubuntu-latest
+                      arch: x64
+                      platform: linux
+                    - os: ubuntu-latest
+                      arch: arm64
+                      platform: linux
+                    - os: ubuntu-latest
+                      arch: armv7l
+                      platform: linux
+
+        runs-on: ${{ matrix.os }}
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Download config
+              uses: actions/download-artifact@v4
+              with:
+                  name: config
+                  path: configs
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  cache: "npm"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build Electron app (macOS)
+              if: matrix.platform == 'mac'
+              run: npx electron-builder --mac --${{ matrix.arch }}
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Build Electron app (Windows)
+              if: matrix.platform == 'win'
+              run: npx electron-builder --win --${{ matrix.arch }}
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Build Electron app (Linux)
+              if: matrix.platform == 'linux'
+              run: npx electron-builder --linux --${{ matrix.arch }}
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Upload artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: weap-${{ matrix.platform }}-${{ matrix.arch }}
+                  path: |
+                      dist/*.dmg
+                      dist/*.zip
+                      dist/*.exe
+                      dist/*.AppImage
+                      dist/*.deb
+                      dist/*.rpm
+                      dist/*.tar.gz
+                  if-no-files-found: error
+                  retention-days: 30
+
+    create-release:
+        needs: build
+        runs-on: ubuntu-latest
+        if: success()
+
+        steps:
+            - name: Download all artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  path: artifacts
+
+            - name: Display structure
+              run: ls -R artifacts
+
+            - name: Create Release
+              uses: softprops/action-gh-release@v1
+              with:
+                  tag_name: build-${{ github.run_number }}
+                  name: Release Build ${{ github.run_number }}
+                  body: |
+                      自动构建版本
+
+                      允许访问的网站:
+                      ${{ github.event.inputs.websites }}
+
+                      包含以下平台的构建:
+                      - macOS (x64, arm64, universal)
+                      - Windows (x64, ia32, arm64)
+                      - Linux (x64, arm64, armv7l)
+                  files: |
+                      artifacts/**/*.dmg
+                      artifacts/**/*.zip
+                      artifacts/**/*.exe
+                      artifacts/**/*.AppImage
+                      artifacts/**/*.deb
+                      artifacts/**/*.rpm
+                      artifacts/**/*.tar.gz
+                  draft: false
+                  prerelease: false
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
