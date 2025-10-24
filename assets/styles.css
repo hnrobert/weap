@@ -1,0 +1,293 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f5f5f5;
+  overflow: hidden;
+}
+
+#app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 标签栏样式 */
+.tab-bar {
+  display: flex;
+  background-color: #e5e5e5;
+  border-bottom: 1px solid #ccc;
+  height: 40px;
+  align-items: center;
+  padding: 0 10px;
+  -webkit-app-region: drag;
+}
+
+.tabs-container {
+  display: flex;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-app-region: no-drag;
+}
+
+.tabs-container::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  min-width: 150px;
+  max-width: 200px;
+  height: 32px;
+  background-color: #d1d1d1;
+  border: 1px solid #bbb;
+  border-radius: 6px 6px 0 0;
+  margin-right: 2px;
+  padding: 0 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  position: relative;
+}
+
+.tab.active {
+  background-color: #fff;
+  border-bottom-color: #fff;
+}
+
+.tab:hover {
+  background-color: #e8e8e8;
+}
+
+.tab.active:hover {
+  background-color: #fff;
+}
+
+.tab-title {
+  flex: 1;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-close {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.tab-close:hover {
+  background-color: #ff5f57;
+  color: white;
+}
+
+.new-tab-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #007aff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px;
+  -webkit-app-region: no-drag;
+}
+
+.new-tab-btn:hover {
+  background-color: #0056b3;
+}
+
+/* 工具栏样式 */
+.toolbar {
+  display: flex;
+  align-items: center;
+  background-color: #f8f8f8;
+  border-bottom: 1px solid #ddd;
+  height: 44px;
+  padding: 0 15px;
+  gap: 15px;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background-color: #e1e1e1;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.nav-btn:hover {
+  background-color: #d1d1d1;
+}
+
+.nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.website-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+#website-select {
+  flex: 1;
+  height: 32px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0 10px;
+  font-size: 14px;
+  background-color: white;
+}
+
+#go-btn {
+  height: 32px;
+  padding: 0 16px;
+  background-color: #007aff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+#go-btn:hover {
+  background-color: #0056b3;
+}
+
+/* 网页视图容器 */
+.webview-container {
+  flex: 1;
+  position: relative;
+  background-color: white;
+}
+
+.webview {
+  width: 100%;
+  height: 100%;
+  border: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.webview.hidden {
+  display: none;
+}
+
+/* 加载状态 */
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 16px;
+  color: #666;
+}
+
+/* 错误状态 */
+.error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #e74c3c;
+}
+
+.error h2 {
+  margin-bottom: 10px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .tab {
+    min-width: 120px;
+  }
+
+  .toolbar {
+    padding: 0 10px;
+    gap: 10px;
+  }
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #2c2c2c;
+    color: #ffffff;
+  }
+
+  .tab-bar {
+    background-color: #3c3c3c;
+    border-bottom-color: #555;
+  }
+
+  .tab {
+    background-color: #4c4c4c;
+    border-color: #666;
+    color: #ffffff;
+  }
+
+  .tab.active {
+    background-color: #2c2c2c;
+  }
+
+  .toolbar {
+    background-color: #3c3c3c;
+    border-bottom-color: #555;
+  }
+
+  .nav-btn {
+    background-color: #4c4c4c;
+    color: #ffffff;
+  }
+
+  .nav-btn:hover {
+    background-color: #5c5c5c;
+  }
+
+  #website-select {
+    background-color: #4c4c4c;
+    border-color: #666;
+    color: #ffffff;
+  }
+
+  .webview-container {
+    background-color: #2c2c2c;
+  }
+}

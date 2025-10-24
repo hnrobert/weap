@@ -1,73 +1,26 @@
-name: Build Electron App
+name: Build and Release Electron App
 
 on:
     workflow_dispatch:
         inputs:
-            websites:
-                description: "允许访问的网站列表（用逗号分隔）"
+            allowed_websites:
+                description: "Comma-separated list of allowed websites"
                 required: true
-                default: "https://github.com,https://google.com"
-                type: string
+                default: "https://google.com,https://github.com"
+            app_name:
+                description: "Application name"
+                required: false
+                default: "WEAP Browser"
+            release_tag:
+                description: "Release tag (leave empty for no release)"
+                required: false
+                default: ""
 
 jobs:
-    prepare-config:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Generate config.json
-              run: |
-                  websites="${{ github.event.inputs.websites }}"
-                  echo "Input websites: $websites"
-
-                  # 创建 JSON 数组
-                  IFS=',' read -ra ADDR <<< "$websites"
-                  json_array="["
-                  first=true
-                  for website in "${ADDR[@]}"; do
-                    website=$(echo "$website" | xargs) # 去除空格
-                    if [ "$first" = true ]; then
-                      json_array="$json_array\"$website\""
-                      first=false
-                    else
-                      json_array="$json_array,\"$website\""
-                    fi
-                  done
-                  json_array="$json_array]"
-
-                  # 生成 config.json
-                  echo "{\"allowedWebsites\":$json_array}" > configs/config.json
-                  cat configs/config.json
-
-            - name: Upload config
-              uses: actions/upload-artifact@v4
-              with:
-                  name: config
-                  path: configs/config.json
-
     build:
-        needs: prepare-config
         strategy:
             matrix:
-                include:
-                    # macOS builds - 只保留主要架构
-                    - os: macos-latest
-                      arch: x64
-                      platform: mac
-                    - os: macos-latest
-                      arch: arm64
-                      platform: mac
-
-                    # Windows builds - 只保留 x64
-                    - os: windows-latest
-                      arch: x64
-                      platform: win
-
-                    # Linux builds - 只保留 x64
-                    - os: ubuntu-latest
-                      arch: x64
-                      platform: linux
+                os: [macos-latest, windows-latest, ubuntu-latest]
 
         runs-on: ${{ matrix.os }}
 
@@ -75,90 +28,132 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
 
-            - name: Download config
-              uses: actions/download-artifact@v4
-              with:
-                  name: config
-                  path: configs
-
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: "20"
+                  node-version: "18"
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v2
+              with:
+                  version: 8
+
+            - name: Get pnpm store directory
+              shell: bash
+              run: |
+                  echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+            - name: Setup pnpm cache
+              uses: actions/cache@v3
+              with:
+                  path: ${{ env.STORE_PATH }}
+                  key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+                  restore-keys: |
+                      ${{ runner.os }}-pnpm-store-
 
             - name: Install dependencies
-              run: npm install
+              run: pnpm install
+
+            - name: Build TypeScript
+              run: pnpm run build
+              env:
+                  ALLOWED_WEBSITES: ${{ github.event.inputs.allowed_websites }}
+                  APP_NAME: ${{ github.event.inputs.app_name }}
 
             - name: Build Electron app (macOS)
-              if: matrix.platform == 'mac'
-              run: npx electron-builder --mac --${{ matrix.arch }}
+              if: matrix.os == 'macos-latest'
+              run: pnpm run dist:mac
               env:
-                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  ALLOWED_WEBSITES: ${{ github.event.inputs.allowed_websites }}
+                  APP_NAME: ${{ github.event.inputs.app_name }}
+                  CSC_IDENTITY_AUTO_DISCOVERY: false
 
             - name: Build Electron app (Windows)
-              if: matrix.platform == 'win'
-              run: npx electron-builder --win --${{ matrix.arch }}
+              if: matrix.os == 'windows-latest'
+              run: pnpm run dist:win
               env:
-                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  ALLOWED_WEBSITES: ${{ github.event.inputs.allowed_websites }}
+                  APP_NAME: ${{ github.event.inputs.app_name }}
 
             - name: Build Electron app (Linux)
-              if: matrix.platform == 'linux'
-              run: npx electron-builder --linux --${{ matrix.arch }}
+              if: matrix.os == 'ubuntu-latest'
+              run: pnpm run dist:linux
               env:
-                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  ALLOWED_WEBSITES: ${{ github.event.inputs.allowed_websites }}
+                  APP_NAME: ${{ github.event.inputs.app_name }}
 
-            - name: Upload artifacts
-              uses: actions/upload-artifact@v4
+            - name: Upload artifacts (macOS)
+              if: matrix.os == 'macos-latest'
+              uses: actions/upload-artifact@v3
               with:
-                  name: weap-${{ matrix.platform }}-${{ matrix.arch }}
+                  name: macos-builds
                   path: |
-                      dist/*.dmg
-                      dist/*.zip
-                      dist/*.exe
-                      dist/*.AppImage
-                      dist/*.deb
-                      dist/*.rpm
-                      dist/*.tar.gz
-                  if-no-files-found: error
-                  retention-days: 30
+                      dist-electron/*.dmg
+                      dist-electron/*.zip
 
-    create-release:
+            - name: Upload artifacts (Windows)
+              if: matrix.os == 'windows-latest'
+              uses: actions/upload-artifact@v3
+              with:
+                  name: windows-builds
+                  path: |
+                      dist-electron/*.exe
+                      dist-electron/*.msi
+
+            - name: Upload artifacts (Linux)
+              if: matrix.os == 'ubuntu-latest'
+              uses: actions/upload-artifact@v3
+              with:
+                  name: linux-builds
+                  path: |
+                      dist-electron/*.AppImage
+                      dist-electron/*.deb
+                      dist-electron/*.rpm
+
+    release:
+        if: github.event.inputs.release_tag != ''
         needs: build
         runs-on: ubuntu-latest
-        if: success()
-
         steps:
             - name: Download all artifacts
-              uses: actions/download-artifact@v4
-              with:
-                  path: artifacts
-
-            - name: Display structure
-              run: ls -R artifacts
+              uses: actions/download-artifact@v3
 
             - name: Create Release
               uses: softprops/action-gh-release@v1
               with:
-                  tag_name: build-${{ github.run_number }}
-                  name: Release Build ${{ github.run_number }}
+                  tag_name: ${{ github.event.inputs.release_tag }}
+                  name: WEAP Browser ${{ github.event.inputs.release_tag }}
                   body: |
-                      自动构建版本
+                      ## WEAP Browser Release ${{ github.event.inputs.release_tag }}
 
-                      允许访问的网站:
-                      ${{ github.event.inputs.websites }}
+                      **Allowed Websites:** ${{ github.event.inputs.allowed_websites }}
+                      **App Name:** ${{ github.event.inputs.app_name }}
 
-                      包含以下平台的构建:
-                      - macOS (x64, arm64, universal)
-                      - Windows (x64, ia32, arm64)
-                      - Linux (x64, arm64, armv7l)
+                      ### Downloads
+
+                      **macOS:**
+                      - DMG installer (Intel & Apple Silicon)
+                      - ZIP archive (Intel & Apple Silicon)
+
+                      **Windows:**
+                      - NSIS installer (x64, x86, ARM64)
+                      - Portable executable (x64, x86, ARM64)
+
+                      **Linux:**
+                      - AppImage (x64, ARM64)
+                      - DEB package (x64, ARM64)
+                      - RPM package (x64, ARM64)
+
+                      ### Installation Instructions
+
+                      **macOS:** Download and open the DMG file, then drag the app to Applications folder
+                      **Windows:** Download and run the installer, or use the portable version
+                      **Linux:** Download the AppImage and make it executable, or install the DEB/RPM package
+
                   files: |
-                      artifacts/**/*.dmg
-                      artifacts/**/*.zip
-                      artifacts/**/*.exe
-                      artifacts/**/*.AppImage
-                      artifacts/**/*.deb
-                      artifacts/**/*.rpm
-                      artifacts/**/*.tar.gz
+                      macos-builds/*
+                      windows-builds/*
+                      linux-builds/*
                   draft: false
                   prerelease: false
               env:

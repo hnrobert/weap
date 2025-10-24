@@ -1,127 +1,181 @@
-# WEAP Browser
+# WEAP - Secure Multi-Tab Browser
 
-一个基于 Electron 的白名单浏览器应用程序。
+WEAP is a secure Electron-based browser that restricts access to a predefined whitelist of websites. It features a modern multi-tab interface with basic navigation controls.
 
-## 功能特性
+## Features
 
-- ✅ 网站白名单控制 - 仅允许访问预定义的网站
-- ✅ 多网站快速切换 - 点击顶部标签快速切换不同网站
-- ✅ 基础浏览功能 - 后退、前进、刷新
-- ✅ 自动化构建 - 支持所有主流平台和架构
+- 🔒 **Website Whitelisting**: Only allows access to predefined websites
+- 📑 **Multi-Tab Support**: Open multiple websites in separate tabs
+- 🔄 **Navigation Controls**: Back, forward, and reload functionality
+- 🎨 **Modern UI**: Clean, intuitive interface with dark mode support
+- 🏗️ **Build-time Configuration**: Configure allowed websites during build
+- 🚀 **Cross-platform**: Supports macOS, Windows, and Linux
 
-## 支持的平台
+## Screenshots
 
-### macOS
+[Add screenshots here]
+
+## Configuration
+
+The allowed websites are configured at build time through environment variables:
+
+- `ALLOWED_WEBSITES`: Comma-separated list of allowed websites (e.g., "https://google.com,https://github.com")
+- `APP_NAME`: Custom application name (optional)
+
+## Development
+
+### Prerequisites
+
+- Node.js 18+
+- pnpm
+
+### Setup
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd weap
+
+# Install dependencies
+pnpm install
+
+# Build TypeScript
+pnpm run build
+
+# Run in development mode
+pnpm run dev
+```
+
+### Building
+
+```bash
+# Build for current platform
+pnpm run dist
+
+# Build for specific platforms
+pnpm run dist:mac    # macOS
+pnpm run dist:win    # Windows
+pnpm run dist:linux  # Linux
+```
+
+### Environment Variables
+
+Set these environment variables before building:
+
+```bash
+export ALLOWED_WEBSITES="https://google.com,https://github.com,https://stackoverflow.com"
+export APP_NAME="My Custom Browser"
+```
+
+## GitHub Actions Build
+
+The project includes automated builds through GitHub Actions. You can trigger a build by:
+
+1. Going to the "Actions" tab in your GitHub repository
+2. Selecting "Build and Release Electron App"
+3. Clicking "Run workflow"
+4. Entering:
+   - **Allowed websites**: Comma-separated list (e.g., `https://google.com,https://github.com`)
+   - **App name**: Custom name for your app (optional)
+   - **Release tag**: Version tag for creating a release (optional)
+
+The workflow will build the app for all supported platforms and architectures:
+
+### Supported Platforms & Architectures
+
+**macOS:**
 
 - Intel (x64)
 - Apple Silicon (arm64)
+- Formats: DMG, ZIP
 
-### Windows
-
-- 64-bit (x64)
-
-### Linux
+**Windows:**
 
 - x64
+- x86 (32-bit)
+- ARM64
+- Formats: NSIS installer, Portable executable
 
-> **注意**: 如需其他架构，可以修改 `package.json` 中的 `build` 配置
+**Linux:**
 
-## 本地开发
+- x64
+- ARM64
+- Formats: AppImage, DEB, RPM
 
-### 安装依赖
+## Usage
 
-```bash
-npm install
+1. Launch the application
+2. Use the dropdown menu to select from allowed websites
+3. Click "Go" or press Enter to navigate
+4. Use the + button or Cmd/Ctrl+T to open new tabs
+5. Use navigation buttons or keyboard shortcuts for back/forward/reload
+
+### Keyboard Shortcuts
+
+- `Cmd/Ctrl + T`: New tab
+- `Cmd/Ctrl + W`: Close tab
+- `Cmd/Ctrl + R`: Reload
+- `Cmd/Ctrl + Q`: Quit application
+- `Cmd/Ctrl + ←`: Go back
+- `Cmd/Ctrl + →`: Go forward
+
+## Security
+
+WEAP implements several security measures:
+
+- **Request filtering**: All network requests are filtered against the whitelist
+- **Context isolation**: Renderer processes are isolated from the main process
+- **No remote module**: Remote module access is disabled
+- **Content Security Policy**: Strict CSP is enforced
+- **External link blocking**: External links are blocked or opened in the system browser
+
+## Architecture
+
+```tree
+├── src/
+│   ├── main.ts          # Main Electron process
+│   └── preload.ts       # Preload script for secure IPC
+├── assets/
+│   ├── index.html       # Main UI
+│   ├── styles.css       # Styling
+│   └── renderer.js      # Renderer process logic
+├── .github/workflows/
+│   └── build.yml        # GitHub Actions workflow
+└── package.json         # Dependencies and build config
 ```
 
-### 配置允许的网站
+## License
 
-编辑 `configs/config.json`:
+MIT License - see LICENSE file for details
 
-```json
-{
-  "allowedWebsites": ["https://github.com", "https://google.com"]
-}
-```
+## Contributing
 
-### 启动应用
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-```bash
-npm start
-```
+## Troubleshooting
 
-### 构建应用
+### Build Issues
 
-```bash
-# 构建所有平台
-npm run build
+- Ensure you have the correct Node.js version (18+)
+- Clear cache: `pnpm store prune`
+- Reinstall dependencies: `rm -rf node_modules && pnpm install`
 
-# 构建特定平台
-npm run build:mac
-npm run build:win
-npm run build:linux
-```
+### Runtime Issues
 
-## 使用 GitHub Actions 自动构建
+- Check the developer console for errors (View → Toggle Developer Tools)
+- Verify that the websites in your whitelist are accessible
+- Ensure proper URL format (include `https://` or `http://`)
 
-### 重要提示
+## Changelog
 
-**无需 package-lock.json**: 本项目已配置为不使用 lock 文件，直接运行即可。
+### v1.0.0
 
-如遇到依赖问题，删除 `node_modules` 重新安装：
-
-```bash
-rm -rf node_modules
-npm install
-```
-
-### 构建步骤
-
-1. 进入仓库的 **Actions** 标签页
-2. 选择 **Build Electron App** 工作流
-3. 点击 **Run workflow**
-4. 输入允许访问的网站列表（用逗号分隔），例如:
-
-   ```text
-   https://github.com,https://google.com,https://stackoverflow.com
-   ```
-
-5. 点击 **Run workflow** 开始构建
-
-构建完成后，会自动创建一个 Release，包含所有平台的安装包。
-
-## 工作流程
-
-1. 用户通过 GitHub Actions 的 workflow_dispatch 输入网站列表
-2. 自动生成 `config.json` 配置文件
-3. 并行构建主流平台（macOS x64/arm64, Windows x64, Linux x64）
-4. 将所有构建产物打包并创建 Release
-
-## 体积优化
-
-本项目已进行以下优化以减小应用体积：
-
-- ✅ 使用最大压缩级别
-- ✅ 过滤不必要的文件（文档、测试、示例）
-- ✅ 不使用 package-lock.json
-- ✅ 零运行时依赖（仅使用 Electron 内置模块）
-- ✅ 只构建主流平台和架构
-
-**预期包体积**:
-
-- macOS: ~90-120 MB
-- Windows: ~80-100 MB
-- Linux: ~90-110 MB
-
-详见 [OPTIMIZATION.md](OPTIMIZATION.md) 了解更多优化细节。
-
-## 安全特性
-
-- 严格的网站白名单控制
-- 阻止所有未经授权的导航
-- 拦截弹出窗口和新标签页
-- 阻止未授权的网络请求
-
-## 许可证
-
-MIT License
+- Initial release
+- Multi-tab browsing
+- Website whitelisting
+- Cross-platform builds
+- GitHub Actions integration

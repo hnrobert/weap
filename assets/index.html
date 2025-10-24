@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WEAP Browser</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- 标签栏 -->
+      <div class="tab-bar">
+        <div class="tabs-container" id="tabs-container">
+          <!-- 标签将通过JavaScript动态添加 -->
+        </div>
+        <button class="new-tab-btn" id="new-tab-btn">+</button>
+      </div>
+
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="nav-buttons">
+          <button class="nav-btn" id="back-btn" title="Back">←</button>
+          <button class="nav-btn" id="forward-btn" title="Forward">→</button>
+          <button class="nav-btn" id="reload-btn" title="Reload">⟳</button>
+        </div>
+
+        <div class="website-selector">
+          <select id="website-select">
+            <!-- 选项将通过JavaScript动态添加 -->
+          </select>
+          <button id="go-btn">Go</button>
+        </div>
+      </div>
+
+      <!-- 网页视图容器 -->
+      <div class="webview-container" id="webview-container">
+        <!-- webview将通过JavaScript动态添加 -->
+      </div>
+    </div>
+
+    <script src="renderer.js"></script>
+  </body>
+</html>
