@@ -20,7 +20,7 @@
     "security",
     "whitelist"
   ],
-  "author": "Your Name",
+  "author": "hnrobert",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -32,7 +32,7 @@
     "electron-store": "^8.1.0"
   },
   "build": {
-    "appId": "com.yourcompany.weap",
+    "appId": "com.hnrobert.weap",
     "productName": "WEAP - Secure Browser",
     "directories": {
       "output": "dist-electron"
@@ -59,7 +59,6 @@
           ]
         }
       ],
-      "icon": "assets/icon.icns",
       "hardenedRuntime": false,
       "gatekeeperAssess": false
     },

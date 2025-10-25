@@ -31,7 +31,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: "18"
+                  node-version: "20"
 
             - name: Setup pnpm
               uses: pnpm/action-setup@v2
@@ -56,9 +56,6 @@ jobs:
 
             - name: Build TypeScript
               run: pnpm run build
-              env:
-                  ALLOWED_WEBSITES: ${{ github.event.inputs.allowed_websites }}
-                  APP_NAME: ${{ github.event.inputs.app_name }}
 
             - name: Build Electron app (macOS)
               if: matrix.os == 'macos-latest'
@@ -66,9 +63,6 @@ jobs:
               env:
                   ALLOWED_WEBSITES: ${{ github.event.inputs.allowed_websites }}
                   APP_NAME: ${{ github.event.inputs.app_name }}
-                  CSC_IDENTITY_AUTO_DISCOVERY: false
-                  CSC_LINK: ""
-                  CSC_KEY_PASSWORD: ""
 
             - name: Build Electron app (Windows)
               if: matrix.os == 'windows-latest'
