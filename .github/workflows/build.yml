@@ -44,7 +44,7 @@ jobs:
                   echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
             - name: Setup pnpm cache
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               with:
                   path: ${{ env.STORE_PATH }}
                   key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -67,6 +67,8 @@ jobs:
                   ALLOWED_WEBSITES: ${{ github.event.inputs.allowed_websites }}
                   APP_NAME: ${{ github.event.inputs.app_name }}
                   CSC_IDENTITY_AUTO_DISCOVERY: false
+                  CSC_LINK: ""
+                  CSC_KEY_PASSWORD: ""
 
             - name: Build Electron app (Windows)
               if: matrix.os == 'windows-latest'
@@ -84,7 +86,7 @@ jobs:
 
             - name: Upload artifacts (macOS)
               if: matrix.os == 'macos-latest'
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v4
               with:
                   name: macos-builds
                   path: |
@@ -93,7 +95,7 @@ jobs:
 
             - name: Upload artifacts (Windows)
               if: matrix.os == 'windows-latest'
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v4
               with:
                   name: windows-builds
                   path: |
@@ -102,7 +104,7 @@ jobs:
 
             - name: Upload artifacts (Linux)
               if: matrix.os == 'ubuntu-latest'
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v4
               with:
                   name: linux-builds
                   path: |
@@ -116,7 +118,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Download all artifacts
-              uses: actions/download-artifact@v3
+              uses: actions/download-artifact@v4
 
             - name: Create Release
               uses: softprops/action-gh-release@v1
