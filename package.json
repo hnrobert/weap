@@ -20,7 +20,10 @@
     "security",
     "whitelist"
   ],
-  "author": "hnrobert",
+  "author": {
+    "name": "hnrobert",
+    "email": "hnrobert@qq.com"
+  },
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -80,8 +83,7 @@
             "arm64"
           ]
         }
-      ],
-      "icon": "assets/icon.ico"
+      ]
     },
     "linux": {
       "target": [
@@ -107,6 +109,7 @@
           ]
         }
       ],
+      "maintainer": "hnrobert <hnrobert@qq.com>",
       "icon": "assets/icon.png"
     },
     "nsis": {
