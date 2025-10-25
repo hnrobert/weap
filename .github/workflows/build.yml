@@ -79,33 +79,55 @@ jobs:
                   ALLOWED_WEBSITES: ${{ github.event.inputs.allowed_websites }}
                   APP_NAME: ${{ github.event.inputs.app_name }}
 
-            - name: Upload artifacts (macOS)
+            - name: Upload installers (macOS)
               if: matrix.os == 'macos-latest'
               uses: actions/upload-artifact@v4
               with:
-                  name: macos-builds
+                  name: macos-installers
                   path: |
                       dist-electron/*.dmg
+
+            - name: Upload portable (macOS)
+              if: matrix.os == 'macos-latest'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: macos-portable
+                  path: |
                       dist-electron/*.zip
 
-            - name: Upload artifacts (Windows)
+            - name: Upload installers (Windows)
               if: matrix.os == 'windows-latest'
               uses: actions/upload-artifact@v4
               with:
-                  name: windows-builds
+                  name: windows-installers
                   path: |
                       dist-electron/*.exe
                       dist-electron/*.msi
 
-            - name: Upload artifacts (Linux)
+            - name: Upload portable (Windows)
+              if: matrix.os == 'windows-latest'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: windows-portable
+                  path: |
+                      dist-electron/*-portable.exe
+
+            - name: Upload installers (Linux)
               if: matrix.os == 'ubuntu-latest'
               uses: actions/upload-artifact@v4
               with:
-                  name: linux-builds
+                  name: linux-installers
                   path: |
-                      dist-electron/*.AppImage
                       dist-electron/*.deb
                       dist-electron/*.rpm
+
+            - name: Upload portable (Linux)
+              if: matrix.os == 'ubuntu-latest'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: linux-portable
+                  path: |
+                      dist-electron/*.AppImage
 
     release:
         if: github.event.inputs.release_tag != ''
@@ -130,27 +152,30 @@ jobs:
 
                       **macOS:**
                       - DMG installer (Intel & Apple Silicon)
-                      - ZIP archive (Intel & Apple Silicon)
+                      - ZIP portable (Intel & Apple Silicon)
 
                       **Windows:**
                       - NSIS installer (x64, x86, ARM64)
                       - Portable executable (x64, x86, ARM64)
 
                       **Linux:**
-                      - AppImage (x64, ARM64)
+                      - AppImage portable (x64, ARM64)
                       - DEB package (x64, ARM64)
                       - RPM package (x64, ARM64)
 
                       ### Installation Instructions
 
-                      **macOS:** Download and open the DMG file, then drag the app to Applications folder
-                      **Windows:** Download and run the installer, or use the portable version
-                      **Linux:** Download the AppImage and make it executable, or install the DEB/RPM package
+                      **macOS:** Download and open the DMG file, then drag the app to Applications folder. For portable version, extract and run the app directly.
+                      **Windows:** Download and run the installer, or use the portable version directly.
+                      **Linux:** Download the AppImage and make it executable, or install the DEB/RPM package.
 
                   files: |
-                      macos-builds/*
-                      windows-builds/*
-                      linux-builds/*
+                      macos-installers/*
+                      macos-portable/*
+                      windows-installers/*
+                      windows-portable/*
+                      linux-installers/*
+                      linux-portable/*
                   draft: false
                   prerelease: false
               env:
