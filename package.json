@@ -45,6 +45,7 @@
       "assets/**/*",
       "package.json"
     ],
+    "publish": null,
     "mac": {
       "target": [
         {
